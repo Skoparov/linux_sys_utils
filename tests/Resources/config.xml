@@ -4,9 +4,8 @@
         "test_user_name": "test_user"
     },
     "misc":
-    {
-        "binary_partition": "/dev/sdb5",
-        "md5_test_folder": "/opt/BuildAgent/work/CameraUnitTests/SystemMethodsUnitTests/Resources/md5_test_folder"
+    {        
+        "binary_partition": "name of partition the test executable located at",      
     },
     "iface":
     {
@@ -22,7 +21,7 @@
     },
     "app":
     {
-        "dir": "/opt/BuildAgent/work/CameraUnitTests/SystemMethodsUnitTests"       
+        "dir": "path to test executable"
     },
     "time":
     {
