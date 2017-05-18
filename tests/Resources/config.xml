@@ -1,0 +1,33 @@
+{
+    "user":
+    {
+        "test_user_name": "test_user"
+    },
+    "misc":
+    {
+        "binary_partition": "/dev/sdb5",
+        "md5_test_folder": "/opt/BuildAgent/work/CameraUnitTests/SystemMethodsUnitTests/Resources/md5_test_folder"
+    },
+    "iface":
+    {
+        "name": "eth0",
+        "ip": "10.0.61.214",
+        "gw": "10.0.61.1",
+        "mac": "00:10:F3:5A:3D:3B",
+        "mtu": "1500",
+        "speed": "1000",
+        "duplex": "1",
+        "type": "1",
+        "enabled": "1"
+    },
+    "app":
+    {
+        "dir": "/opt/BuildAgent/work/CameraUnitTests/SystemMethodsUnitTests"       
+    },
+    "time":
+    {
+        "timezone": "Europe/Moscow",
+        "offset": "3.0",
+        "offset_str": "GMT+03.00"
+    }
+}
