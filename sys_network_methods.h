@@ -18,9 +18,6 @@ namespace network
 /// \brief Turn iface up\down
 void set_iface_state( const std::string& iface_name, bool on );
 
-/// \brief Returns ip address of an iface, or any ip(except for lo) if iface_name is empty
-std::string get_iface_ip_or_any( const std::string& iface_name = std::string{} );
-
 /// \brief Returns interface gateway
 std::string get_iface_gateway( const std::string& iface_name );
 

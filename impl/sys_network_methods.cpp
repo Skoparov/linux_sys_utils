@@ -163,62 +163,6 @@ void update_network_info( const std::vector< netw_iface_info >& ifaces, const st
   }
 }
 
-std::string get_iface_ip_or_any( const std::string& iface_name )
-{
-  std::string interface_ip;
-
-  char buf[ 1024 ];
-
-  ifconf ifc;
-  ifc.ifc_len = sizeof( buf );
-  ifc.ifc_buf = buf;
-
-  int sock_all_ifaces{ socket( AF_INET, SOCK_DGRAM, IPPROTO_IP ) };
-
-  if( sock_all_ifaces != -1 && ioctl( sock_all_ifaces, SIOCGIFCONF, &ifc ) != -1 )
-  {
-    std::string curr_name;
-
-    ifreq* it{ ifc.ifc_req };
-    const ifreq* const end{ it + ifc.ifc_len / sizeof( ifreq ) };
-
-    for ( ; it != end; ++it )
-    {
-      curr_name = it->ifr_name;
-
-     // Ищем адрес, или, если eth_name пустой, берем первый попавшийся, только не "lo"
-     if( ( iface_name.length() && curr_name == iface_name ) ||
-         ( iface_name.empty() && curr_name != "lo" ) )
-     {
-        ifreq ifr;
-        strcpy( ifr.ifr_name, it->ifr_name );
-
-        /* process ip */
-        if( ioctl ( sock_all_ifaces, SIOCGIFADDR, &ifr ) == 0 )
-        {
-          interface_ip.assign(inet_ntoa(( (struct sockaddr_in *)&ifr.ifr_addr )->sin_addr) );
-          break;
-        }
-      }
-    }
-
-    close( sock_all_ifaces );
-  }
-
-  if( interface_ip.empty() )
-  {
-    boost::system::error_code ec;
-    interface_ip = boost::asio::ip::host_name( ec );
-
-    if( ec )
-    {
-      interface_ip = "HOST_IP";
-    }
-  }
-
-  return interface_ip;
-}
-
 int get_iface_type( const std::string& iface_name )
 {
   if( iface_name.empty() )

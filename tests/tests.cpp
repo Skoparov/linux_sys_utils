@@ -244,8 +244,6 @@ BOOST_AUTO_TEST_CASE( test_iface )
     BOOST_TEST_MESSAGE( "--------------\nIFACE" );
 
     std::string ip;
-    BOOST_REQUIRE_NO_THROW( ip = network::get_iface_ip_or_any() );
-    BOOST_REQUIRE( !ip.empty() );
 
     std::string test_iface_name{ CONFIG.get< std::string >( "iface.name" ) };
     std::string test_iface_ip{ CONFIG.get< std::string >( "iface.ip" ) };
@@ -256,10 +254,6 @@ BOOST_AUTO_TEST_CASE( test_iface )
     uint test_iface_duplex{ CONFIG.get< uint >( "iface.duplex" ) };
     uint test_iface_type{ CONFIG.get< uint >( "iface.type" ) };
     uint test_iface_enabled{ CONFIG.get< uint >( "iface.enabled" ) };
-
-    // get_iface_ip_or_any
-    BOOST_REQUIRE_NO_THROW( ip = network::get_iface_ip_or_any( test_iface_name ) );
-    BOOST_REQUIRE( ip == test_iface_ip );
 
     // get_iface_gateway
     std::string gateway;
