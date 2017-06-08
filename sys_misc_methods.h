@@ -9,6 +9,10 @@ namespace utils
 namespace sys
 {
 
+/// \brief Get arbitrary installed package version,
+/// or empty string if it's not found or not installed
+std::string get_package_version( const std::string& package_name );
+
 /// \brief Returns number of cores
 uint hardware_concurrency();
 

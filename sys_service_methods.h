@@ -24,6 +24,9 @@ void restart_service( const std::string& service );
 /// \brief Reload service conf
 void reload_service( const std::string& service );
 
+/// \brief Check if service is running
+bool service_is_running( const std::string& service );
+
 }
 
 }

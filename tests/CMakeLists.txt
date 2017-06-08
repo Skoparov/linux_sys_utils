@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(TEST_PROJECT "LinuxUtilsUnitTests")
+set(TEST_PROJECT "linux_utils_unit_tests")
 PROJECT(${TEST_PROJECT})
 
 add_definitions("-std=c++11")
