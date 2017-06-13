@@ -136,87 +136,84 @@ std::pair< std::string, double > get_time_zone_offset( const std::string& timezo
   return { boost::str( offset_format % offset_str ), std::stod( offset_str ) };
 }
 
-std::string get_ntp_time_for_server(const std::string &server, bool local, const std::string &format, uint32_t attempts)
+std::string get_ntp_time_from_server(  const std::string &server, bool local, const std::string& format, uint32_t attempts )
 {
-    int maxlen{ 1024 };
-    int portnum{ 123 };
-    int res{ -1 };
+  int sock{ socket( PF_INET, SOCK_DGRAM, 0 ) };
+  if( sock == -1 )
+  {
+      throw std::runtime_error{ std::string{ "Failed to open socket: " } + std::strerror( errno ) };
+  }
 
-    std::vector< unsigned long >  buf( maxlen );
-    std::array< unsigned char, 48 > msg{ 010, 0, 0, 0, 0, 0, 0, 0, 0 }; // the packet
+  BOOST_SCOPE_EXIT( sock ){ close( sock ); } BOOST_SCOPE_EXIT_END
 
-    for( uint32_t attempt{ 0 }; attempt < attempts && ( res < 0 ); ++attempt )
-    {
-      buf.clear();
+  struct timeval tv{ 0, 200000 };// timeout = 200ms
 
-      int sock{ socket( PF_INET, SOCK_DGRAM, 0 ) };
-      if( sock = -1 )
-      {
-          throw std::runtime_error{ "Failed to open socket" };
-      }
+  if( ( setsockopt( sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof( tv ) ) != 0 ) ||
+      ( setsockopt( sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof( tv ) ) != 0 ) )
+  {
+    throw std::runtime_error{ std::string{ "setsockopt failed: " } + std::strerror( errno ) };
+  }
 
-      BOOST_SCOPE_EXIT( sock ){ close( sock ); } BOOST_SCOPE_EXIT_END
+  hostent* he{ gethostbyname( server.c_str() ) };
+  if( !he )
+  {
+    throw std::runtime_error{ "Failed to resolve host name: " + server };
+  }
 
-      struct timeval tv;
-      tv.tv_sec = 0;
-      tv.tv_usec = 200000; // timeout = 200ms
+  static const int portnum{ 123 };
 
-      if( ( setsockopt( sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof( tv ) ) != 0 ) ||
-          ( setsockopt( sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof( tv ) ) != 0 ) )
-      {
-        throw std::runtime_error{ "setsockopt failed" };
-      }
+  struct sockaddr_in server_addr;
+  memset( &server_addr, 0, sizeof( sockaddr_in ) );
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_addr = *reinterpret_cast< in_addr* >( he->h_addr_list[ 0 ] );
+  server_addr.sin_port = htons( portnum );
 
-      hostent* he{ gethostbyname( server.c_str() ) };
-      if( !he )
-      {
-        throw std::runtime_error{ "Failed to resolve host name: " + server };
-      }
+  static const size_t maxlen{ 1024 };
+  std::vector< unsigned long >  buf( maxlen );
+  std::array< unsigned char, 48 > msg{ 010, 0, 0, 0, 0, 0, 0, 0, 0 }; // the packet
 
-      struct sockaddr_in server_addr;
-      memset( &server_addr, 0, sizeof( sockaddr_in ) );
-      server_addr.sin_family = AF_INET;
-      server_addr.sin_addr = *reinterpret_cast< in_addr* >( he->h_addr_list[ 0 ] );
-      server_addr.sin_port = htons( portnum );
+  int res{ -1 };
 
-      res = sendto( sock, msg.data(), msg.size(), 0, reinterpret_cast< sockaddr* >( &server_addr ), sizeof( server_addr ) );
-      if( res < 0 )
-      {
-        continue;
-      }
-
-      struct sockaddr saddr;
-      socklen_t saddr_l = sizeof( saddr );
-
-      res = recvfrom( sock, buf.data(), 48, 0, &saddr, &saddr_l );
-      if( res < 0 )
-      {
-        continue;
-      }
-    }
-
+  for( uint32_t attempt{ 0 }; attempt < attempts && ( res < 0 ); ++attempt )
+  {
+    res = sendto( sock, msg.data(), msg.size(), 0, reinterpret_cast< sockaddr* >( &server_addr ), sizeof( server_addr ) );
     if( res < 0 )
     {
-      std::stringstream s;
-      s << "Failed to receive time from " << server << " after " << 5 << " attempts";
-      throw std::runtime_error{ s.str() };
+      continue;
     }
 
-    long tmit{ ntohl( static_cast< time_t >( buf.at( 4 ) ) ) };
-    tmit -= 2208988800U;
+    struct sockaddr saddr;
+    socklen_t saddr_l = sizeof( saddr );
 
-    boost::posix_time::ptime now = local?
-                  boost::posix_time::ptime_from_tm( *localtime( &tmit ) ) :
-                  boost::posix_time::ptime_from_tm( *gmtime( &tmit ) );
+    res = recvfrom( sock, buf.data(), 48, 0, &saddr, &saddr_l );
+    if( res < 0 )
+    {
+      continue;
+    }
+  }
 
-    static std::locale loc( std::cout.getloc(),
-                              new boost::posix_time::time_facet{ format.c_str() } );
+  if( res < 0 )
+  {
+    std::stringstream s;
+    s << "Failed to receive time from " << server << " after " << attempts << " attempts";
+    throw std::runtime_error{ s.str() };
+  }
 
-    std::basic_stringstream<char> wss;
-    wss.imbue( loc );
-    wss << now;
+  long tmit{ ntohl( static_cast< time_t >( buf.at( 4 ) ) ) };
+  tmit -= 2208988800U;
 
-    return wss.str();
+  boost::posix_time::ptime now = local?
+                boost::posix_time::ptime_from_tm( *localtime( &tmit ) ) :
+                boost::posix_time::ptime_from_tm( *gmtime( &tmit ) );
+
+  static std::locale loc( std::cout.getloc(),
+                            new boost::posix_time::time_facet{ format.c_str() } );
+
+  std::basic_stringstream<char> wss;
+  wss.imbue( loc );
+  wss << now;
+
+  return wss.str();
 }
 
 }// time
