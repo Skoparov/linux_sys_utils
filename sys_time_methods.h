@@ -33,7 +33,7 @@ std::vector< std::string > get_time_zones();
 std::pair< std::string, double > get_time_zone_offset( const std::string& time_zone );
 
 /// \brief Query ntp server
-std::string get_ntp_time_for_server( const std::string &server,
+std::string get_ntp_time_from_server( const std::string &server,
                                      bool local = false,
                                      const std::string& format = "%Y.%m.%d %X",
                                      uint32_t attempts = 5 );

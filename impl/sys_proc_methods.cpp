@@ -1,6 +1,4 @@
 #include "../sys_proc_methods.h"
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_STATIC_LINK
 
 #include <pwd.h>
 
@@ -46,9 +44,9 @@ std::vector< pid_t > get_pids( const std::string& proc_name_regex, const std::st
   namespace bfs = boost::filesystem;
   std::vector< pid_t > pids;
 
-  bfs::path p{ "/proc" };
-  boost::format cmdline_format{ "%s/cmdline" };
-  boost::regex pid_regex{ "[0-9]+" };
+  static const bfs::path p{ "/proc" };
+  static boost::format cmdline_format{ "%s/cmdline" };
+  static const boost::regex pid_regex{ "[0-9]+" };
   boost::regex proc_regex{ proc_name_regex };
 
   for( bfs::directory_entry& entry : boost::make_iterator_range( bfs::directory_iterator( p ), {} ) )

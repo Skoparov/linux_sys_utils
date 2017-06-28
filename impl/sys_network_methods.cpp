@@ -259,23 +259,13 @@ netw_iface_info get_eth_iface_info( const std::string& iface_name )
     if( ioctl ( sock, SIOCGIFADDR, &ifr ) != -1 )
     {
       result.ip = inet_ntoa( ( ( sockaddr_in* )&ifr.ifr_addr )->sin_addr );
-    }
-    else
-    {
-      throw std::runtime_error{ "SIOCGIFADDR ioctl failed, errno: " +
-                                std::string{ std::strerror( errno ) } };
-    }
+    }    
 
     // Mask
     if( ioctl(sock, SIOCGIFNETMASK, &ifr ) != -1 )
     {
       result.mask = inet_ntoa( ( ( sockaddr_in* )&ifr.ifr_netmask )->sin_addr );
-    }
-    else
-    {
-      throw std::runtime_error{ "SIOCGIFNETMASK ioctl failed, errno: " +
-                                std::string{ std::strerror( errno ) } };
-    }
+    }   
 
     // speed
     ethtool_cmd edata;
@@ -333,13 +323,7 @@ netw_iface_info get_eth_iface_info( const std::string& iface_name )
   return result;
 }
 
-void set_port_open( const std::string& port, bool is_open )
-{
-  std::string command{ std::string{ "iptables -" } + ( is_open ? "A" : "D" ) + " INPUT -p tcp --dport " + port + " -j ACCEPT" };
-  details::execute_sys_command( command );
-}
-
-std::vector< netw_iface_info > get_eth_ifaces()
+std::vector< netw_iface_info > get_ifaces_of_type( int type )
 {
   std::vector< netw_iface_info > result;
 
@@ -359,7 +343,7 @@ std::vector< netw_iface_info > get_eth_ifaces()
         try
         {
           netw_iface_info if_info{ get_eth_iface_info( name ) };
-          if( if_info.type == ARPHRD_ETHER )
+          if( if_info.type == type )
           {
             if_info.name = name;
             result.emplace_back( if_info );

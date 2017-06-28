@@ -43,7 +43,7 @@ namespace details
     return direction;
   }
 
-  std::string direction_to_str( const gpio_direction& direction )
+  std::string direction_to_str( const gpio_direction& direction ) noexcept
   {
     return ( direction == gpio_direction::in )? "in" : "out";
   }
@@ -209,7 +209,7 @@ int8_t get_gpio_line_status( uint32_t line )
       throw std::runtime_error{ "Could not read from gpio line file" };
     }
 
-    line_status = ( uint8_t )boost::lexical_cast< uint32_t >( val );
+    line_status = boost::lexical_cast< uint8_t >( val );
   }
   else
   {

@@ -64,7 +64,6 @@ void set_sys_time( uint year, uint month, uint day, uint hour, uint min, uint se
     throw std::runtime_error{ std::string{ "Failed to set system time: " } + strerror( result ) };
   }
 
-  // Поменялся биос, требуется синхронизация часов с ним, иначе после перезагрузки откатывается
   details::execute_sys_command( "hwclock --systohc" );
 }
 

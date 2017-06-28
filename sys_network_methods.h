@@ -45,14 +45,11 @@ struct netw_iface_info
 /// \brief Returns interface infor
 netw_iface_info get_eth_iface_info( const std::string& iface_name );
 
-/// \brief Lists netw ifaces
-std::vector< netw_iface_info > get_eth_ifaces();
+/// \brief Lists netw ifaces of specified type
+std::vector< netw_iface_info > get_ifaces_of_type( int type = ARPHRD_ETHER );
 
 /// \brief Lists dns servers
 std::vector< std::string > get_dns_list();
-
-/// \brief Add or delete rule for tcp | dport | INPUT
-void set_port_open( const std::string& port, bool is_open );
 
 /// \brief Updates network interfaces data and dns servers for system
 void update_network_info( const std::vector< netw_iface_info >& ifaces , const std::vector< std::string >& dns_servers );

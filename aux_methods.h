@@ -19,7 +19,7 @@ namespace aux
 
 /// \brief Get demangled class name
 template< class T >
-std::string get_class_name( const T& type )
+std::string get_class_name( const T& type ) noexcept
 {
   int status;
   return abi::__cxa_demangle( typeid( type ).name(), 0, 0, &status );
